@@ -1,10 +1,8 @@
 (ns kafka-example.core
-  (:require [taoensso.nippy :as nippy])
-  (:import (org.apache.kafka.clients.producer KafkaProducer
-                                              ProducerRecord)
-           (org.apache.kafka.clients.consumer KafkaConsumer)
-           (org.apache.kafka.common.serialization ByteArraySerializer
-                                                  ByteArrayDeserializer))
+  (:require [kafka-example.config :as config]
+            [kafka-example.admin :as admin]
+            [kafka-example.consumer :as consumer]
+            [kafka-example.producer :as producer])
   (:gen-class))
 
 ;;; https://kafka.apache.org/quickstart
@@ -15,32 +13,31 @@
 ;;; bin/kafka-server-start.sh config/server.properties
 ;;; bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic clj-example
 
-(def p-cfg {"value.serializer" ByteArraySerializer
-            "key.serializer" ByteArraySerializer
-            "bootstrap.servers" "localhost:9092"})
-
-(def producer (KafkaProducer. p-cfg))
-
-(def c-cfg
-  {"bootstrap.servers" "localhost:9092"
-   "group.id" "avg-rate-consumer"
-   "auto.offset.reset" "earliest"
-   "enable.auto.commit" "false"
-   "key.deserializer" ByteArrayDeserializer
-   "value.deserializer" ByteArrayDeserializer})
-
-(def consumer (doto (KafkaConsumer. c-cfg)
-                (.subscribe ["clj-example"])))
-
-(defn ->producer-record
-  [topic part k v]
-  (ProducerRecord. topic (int part) k (nippy/freeze v)))
-
-(defn send-to-kafka
-  [p r]
-  (.send p r))
-
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
   (println "Hello, World!"))
+
+(def p (producer/->producer config/producer-config))
+
+;;; create a consumer
+(def c (consumer/->consumer config/consumer-config config/topic-name))
+
+;;; create 2nd consumer with another group.id
+(def c2 (consumer/->consumer (merge config/consumer-config
+                                    {"group.id" "group-2"})
+                             config/topic-name))
+
+;;; send something
+;;(producer/send-to-kafka p
+;;                        (producer/->producer-record config/topic-name
+;;                                                    1
+;;                                                    1
+;;                                                    {:name "john"}))
+
+;;; each consumer can consume previous message
+;;; because they have different group.id
+;;; http://kafka.apache.org/documentation.html#intro_consumers
+
+;;; (consumer/consume c)
+;;; (consumer/consume c2)

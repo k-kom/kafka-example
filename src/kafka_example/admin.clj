@@ -5,11 +5,12 @@
 
 (def admin-client (AdminClient/create {"bootstrap.servers" "localhost:9092"}))
 
-(def t "clj-example")
-
 (defn create-topic
-  [client topic-name p replication]
-  (.createTopics client [(NewTopic. t (int p) replication)]))
+  [client topic-name partitions replication]
+  (.createTopics client
+                 [(NewTopic. topic-name
+                             (int partitions)
+                             replication)]))
 
 
 (defn describe-topic
