@@ -40,9 +40,3 @@
 
 (defn kafka-streams []
   (KafkaStreams. (.build builder) stream-config))
-
-;;(let [kf (kafka-streams)]
-;;  (.start kf)
-;;  (Thread/sleep 35000)
-;;  (println "Shutting down the Yellling APP now")
-;;  (.close kf))
