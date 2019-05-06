@@ -3,7 +3,8 @@
   (:import (org.apache.kafka.streams.kstream KStream
                                              Consumed
                                              Produced
-                                             ValueMapper)
+                                             ValueMapper
+                                             Printed)
            (org.apache.kafka.streams StreamsBuilder
                                      KafkaStreams StreamsConfig)
            (org.apache.kafka.common.serialization Serdes)
@@ -33,10 +34,14 @@
 (def uppercase-stream (.mapValues simple-first-stream
                                   upper-case))
 
+(defn log-me [s]
+  (.print s (.withLabel (Printed/toFile "src-log") "src-topic")))
+
 ;; sink
 (def sink (.to uppercase-stream
                "out-topic"
                (Produced/with string-serde string-serde)))
 
 (defn kafka-streams []
+  (log-me uppercase-stream)
   (KafkaStreams. (.build builder) stream-config))

@@ -1,5 +1,6 @@
 (ns user
-  (:require [kafka-example.config :as config]
+  (:require [clojure.data.generators :as gen]
+            [kafka-example.config :as config]
             [kafka-example.producer :as pro]
             [kafka-example.stream.example :as streams])
   (:import (org.apache.kafka.clients.producer KafkaProducer
